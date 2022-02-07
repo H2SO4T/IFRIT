@@ -1,0 +1,34 @@
+
+c_tester design principles:
+
+init:
+    load config.ini
+    program compilation
+    program execution
+    collect coverage
+step:
+
+
+
+
+<------------ experiments ------------>
+
+1) Uniformity and reachability tests (L2-tests):
+
+6k (0.1), 12k (0.05), 24k (0.01)
+
+2) Mutants and Fault Detection:
+
+3) Comparison with 20 minutes time budget to test reachability:
+The percentage of tests that reaches the given points
+
+
+<------------ TODO ------------>
+
+- Salvare la policy a fine allenamento e testarla sul programma per vedere cosa fa
+
+- Introdurre il file di configurazione per i programmi "problematici"
+
+- Funzioni custom vanno chiamate come funzioni di python
+
+- Fixare tree alignment per programmi che hanno più di una funzione
