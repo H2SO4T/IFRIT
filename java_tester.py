@@ -3,11 +3,11 @@ import json
 import operator
 import os
 import sys
+from os.path import exists
 from xml.dom import minidom
 
 import gym
 import numpy as np
-# from gcovr import __main__ as gcov
 import requests
 
 
@@ -57,6 +57,10 @@ class java_tester(gym.Env):
         self.class_files = self.config['DEFAULT']['class_files']
         self.endpoint = json.loads(self.config['DEFAULT']['endpoint'])
         self.url = self.config['DEFAULT']['url']
+        self.file_create_with_command = os.path.dirname(__file__) + "/test_command_injection"
+        if os.path.exists(self.file_create_with_command):
+            os.remove(self.file_create_with_command)
+        self.cmd_to_inject = "touch " + self.file_create_with_command
 
         # Mettere quanti valori prende in ingresso l'endpoint
         parameters_ = self.endpoint['restEndpoint']['parameters']
@@ -64,7 +68,7 @@ class java_tester(gym.Env):
         type_cmd_var = self.endpoint['typeCmdVar']
 
         for index, param in enumerate(parameters_):
-            if param["name"] == name_cmd_var and param["format"] == type_cmd_var:
+            if param["name"] == name_cmd_var and param["format"].upper() == type_cmd_var.upper():
                 self.cmd_param_index = index
 
         self.variables_space = len(parameters_)
@@ -154,7 +158,7 @@ class java_tester(gym.Env):
             observation = np.append(observation, [single_observation])
 
         for element in self.variables_vector:
-            if type(element) == str:
+            if element != self.cmd_to_inject and type(element) == str:
                 pos = ''
                 for letter in element:
                     pos += str(self.alphabet.find(str(letter)))
@@ -191,10 +195,9 @@ class java_tester(gym.Env):
             r = requests.get(endpoint)
             print("this is the status_code result: ", r.status_code)
             return
-        if method == "POST":  # TODO
-            return
-        if method == "PUT":  # TODO
-            return
+        else:  # TODO implementare logica per POST e PUT
+            print("method", method, "is not supported")
+            sys.exit()
 
     def dump_jacoco_result(self):
         cmd = ["java", "-jar", self.jacococli_jar, "dump --destfile", self.result_jacoco_exec, "--reset"]
@@ -206,8 +209,19 @@ class java_tester(gym.Env):
         os.system(' '.join(cmd))
 
     def delete_jacoco_result(self):
-        cmd = ["rm", self.result_jacoco_exec]
-        os.system(' '.join(cmd))
+        if os.path.exists(self.result_jacoco_exec):
+            os.remove(self.result_jacoco_exec)
+
+    def check_and_write_result(self):
+        file_exists = exists(self.file_create_with_command)
+
+        lines = ["command line executed with variable: " + str(self.variables_vector)]
+        if file_exists:
+            lines.append("the injected command was executed")
+        with open('result/result.txt', 'w') as f:
+            for line in lines:
+                f.write(line)
+                f.write('\n')
 
     def step(self, action):
         self.compute_variables_vector(action)
@@ -226,6 +240,7 @@ class java_tester(gym.Env):
         reward, done = self.compute_reward(old_observation)
         if reward >= 1.0:
             print("command line executed with variable:", self.variables_vector)
+            self.check_and_write_result()
             sys.exit()
         self.steps += 1
         # self.monitor_training()
@@ -237,8 +252,8 @@ class java_tester(gym.Env):
         # print(f'operator: {self.operators_space[action[2]]}, scale factor: {self.scale_factors[action[1]]},'
         # f' variable_number: {action[0]}')
         index_var_vector = action[0]
-        if index_var_vector == self.cmd_param_index:
-            self.variables_vector[index_var_vector] = "ls"  # TODO comando per command injection
+        if index_var_vector == self.cmd_param_index:  # TODO implementare la logica per cambiare comando in base al risultato
+            self.variables_vector[index_var_vector] = self.cmd_to_inject
         elif type(self.variables_vector[index_var_vector]) == int:
             scale_value = action[1] % len(self.scale_factors)
             # print(scale_value)

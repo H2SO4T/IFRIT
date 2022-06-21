@@ -17,20 +17,35 @@
 - Export PYTHONPATH: `export PYTHONPATH="path/to/IFRIT"`
 - Generate the main folder containing each c program's folders and put them inside (look at `programs` folder).
 - Activate the venv
+- create `config.ini` file from `confic.example.ini` file
 
 ## Launching IFRIT
 
 Once started, IFRIT testes all the c programs   
 IFRIT uses several flags:
-- `--train_type`; 0=standard tests, 1=mutation tests
+- ``--train_type``; 0=standard tests, 1=mutation tests
 - ``--timesteps``; maximum train duration
 - ``--input_domain``; numeric input domain
 - ``--episode_lenght``; the episode length
-- ``--timer``; timer for the training
+- ``--sast_result``; json of model
+- ``--jacococli_jar``; path of `jacococli.jar`
+- ``--source_files``; directory of source code
+- ``--class_files``; directory of compiled class
+- ``--url``; url to application
 
 e.g.:
 
-`python3 main.py --timesteps 2000000 --input_domain 6000 --episode_length 6000 --timer 60`
+```shell
+python3 main.py --timesteps 2000000 --input_domain 6000 --episode_length 6000 --timer 60
+```
+```shell
+python3 main.py --timesteps 2000000 --input_domain 6000 --episode_length 6000 --timer 60 \
+--sast_result ./test/sast_result.json \
+--jacococli_jar ./jacoco/jacococli.jar \
+--source_files ./codeql_source/src/main/java \
+--class_files ./codeql_source/target/classes \
+--url http://localhost:8080
+```
 
 ## Running the standard tests
 
