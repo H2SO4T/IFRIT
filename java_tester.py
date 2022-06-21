@@ -57,6 +57,10 @@ class java_tester(gym.Env):
         self.class_files = self.config['DEFAULT']['class_files']
         self.endpoint = json.loads(self.config['DEFAULT']['endpoint'])
         self.url = self.config['DEFAULT']['url']
+        self.request_header = self.config['DEFAULT'].get('header')
+        if self.request_header is not None:
+            self.request_header = json.loads(self.request_header)
+
         self.file_create_with_command = os.path.dirname(__file__) + "/test_command_injection"
         if os.path.exists(self.file_create_with_command):
             os.remove(self.file_create_with_command)
@@ -192,7 +196,10 @@ class java_tester(gym.Env):
 
             endpoint = endpoint + query_param
             print("execute request: ", endpoint)
-            r = requests.get(endpoint)
+            if self.request_header is None:
+                r = requests.get(endpoint)
+            else:
+                r = requests.get(endpoint, headers=self.request_header)
             print("this is the status_code result: ", r.status_code)
             return
         else:  # TODO implementare logica per POST e PUT
