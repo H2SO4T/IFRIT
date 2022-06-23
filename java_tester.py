@@ -3,6 +3,7 @@ import json
 import operator
 import os
 import sys
+import urllib
 from os.path import exists
 from xml.dom import minidom
 
@@ -187,7 +188,8 @@ class java_tester(gym.Env):
                 if param["typeParameter"] == "QUERY_PARAM":
                     query_param.append(param["name"] + "=" + value)
                 elif param["typeParameter"] == "PATH_PARAM":
-                    endpoint = endpoint.replace("{" + param["name"] + "}", value)
+                    encode = urllib.parse.quote(value, safe='')
+                    endpoint = endpoint.replace("{" + param["name"] + "}", encode)
 
             if len(query_param) > 0:
                 query_param = "?" + '&'.join(query_param)
@@ -195,6 +197,7 @@ class java_tester(gym.Env):
                 query_param = ""
 
             endpoint = endpoint + query_param
+            self.request_to_exect = endpoint
             print("execute request: ", endpoint)
             if self.request_header is None:
                 r = requests.get(endpoint)
@@ -222,7 +225,11 @@ class java_tester(gym.Env):
     def check_and_write_result(self):
         file_exists = exists(self.file_create_with_command)
 
-        lines = ["command line executed with variable: " + str(self.variables_vector)]
+        rest_endoint = self.endpoint["restEndpoint"]
+        method = rest_endoint["method"]
+
+        lines = ["executed " + method + " request " + self.request_to_exect
+                 + " with variable: " + str(self.variables_vector)]
         if file_exists:
             lines.append("the injected command was executed")
         with open('result/result.txt', 'w') as f:
