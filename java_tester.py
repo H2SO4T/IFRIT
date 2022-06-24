@@ -67,8 +67,14 @@ class java_tester(gym.Env):
             os.remove(self.file_create_with_command)
         self.cmd_to_inject = "touch " + self.file_create_with_command
 
+        rest_endoint = self.endpoint['restEndpoint']
+        url = self.url
+        path = '/'.join([rest_endoint["rootPath"], rest_endoint["path"]])
+        method = rest_endoint["method"]
+        self.write_result(["","test of the " + method + " call to the endpoint " + url + path])
+
         # Mettere quanti valori prende in ingresso l'endpoint
-        parameters_ = self.endpoint['restEndpoint']['parameters']
+        parameters_ = rest_endoint['parameters']
         name_cmd_var = self.endpoint['nameCmdVar']
         type_cmd_var = self.endpoint['typeCmdVar']
 
@@ -181,13 +187,16 @@ class java_tester(gym.Env):
         params = rest_endoint["parameters"]
 
         endpoint = url + path
+        line_to_add_result_file = ["  - Exec request with params:"]
         if method == "GET":
             query_param = []
             for index, param in enumerate(params):
                 value = self.variables_vector[index]
                 if param["typeParameter"] == "QUERY_PARAM":
+                    line_to_add_result_file.append("      QUERY_PARAM: " + param["name"])
                     query_param.append(param["name"] + "=" + value)
                 elif param["typeParameter"] == "PATH_PARAM":
+                    line_to_add_result_file.append("      PATH_PARAM: " + param["name"])
                     encode = urllib.parse.quote(value, safe='')
                     endpoint = endpoint.replace("{" + param["name"] + "}", encode)
 
@@ -197,13 +206,15 @@ class java_tester(gym.Env):
                 query_param = ""
 
             endpoint = endpoint + query_param
-            self.request_to_exect = endpoint
             print("execute request: ", endpoint)
             if self.request_header is None:
                 r = requests.get(endpoint)
             else:
                 r = requests.get(endpoint, headers=self.request_header)
+            line_to_add_result_file.append("    this is the status_code result: " + str(r.status_code))
+            line_to_add_result_file.append("")
             print("this is the status_code result: ", r.status_code)
+            self.write_result(line_to_add_result_file)
             return
         else:  # TODO implementare logica per POST e PUT
             print("method", method, "is not supported")
@@ -228,14 +239,23 @@ class java_tester(gym.Env):
         rest_endoint = self.endpoint["restEndpoint"]
         method = rest_endoint["method"]
 
-        lines = ["executed " + method + " request " + self.request_to_exect
-                 + " with variable: " + str(self.variables_vector)]
+        lines = ["  The call reached the vulnerability with variable: " + str(self.variables_vector)]
         if file_exists:
-            lines.append("the injected command was executed")
-        with open('result/result.txt', 'w') as f:
+            lines.append("  the injected command was executed")
+        else:
+            lines.append("  the injected command was NOT executed")
+
+        lines.append("  ---  ---  ---  ---  ---  ")
+        lines.append("")
+
+        self.write_result(lines)
+
+    def write_result(self, lines):
+        with open('result/result.txt', 'a') as f:
             for line in lines:
                 f.write(line)
                 f.write('\n')
+            f.close()
 
     def step(self, action):
         self.compute_variables_vector(action)

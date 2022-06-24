@@ -104,6 +104,9 @@ def main():
     class_files = args.class_files
     url = args.url
 
+    if os.path.exists('result/result.txt'):
+        os.remove('result/result.txt')
+
     standard_test(
         timesteps,
         episode_length=episode_length,
