@@ -1,10 +1,9 @@
-# IFRIT
+# JIFRIT
 
 ## Requirements
 
 - python3
 - MacOS or Ubuntu
-- gcc or clang
 
 ## Installation & Setup
 
@@ -12,17 +11,17 @@
 - Install the requirements `requirements.txt` using the command `pip3 install -r requirements.txt` 
 
 
-## Using IFRIT
+## Using JIFRIT
 
 - Export PYTHONPATH: `export PYTHONPATH="path/to/IFRIT"`
 - Generate the main folder containing each c program's folders and put them inside (look at `programs` folder).
 - Activate the venv
 - create `config.ini` file from `confic.example.ini` file
 
-## Launching IFRIT
+## Launching JIFRIT
 
-Once started, IFRIT testes all the c programs   
-IFRIT uses several flags:
+Once started, JIFRIT testes all ranning Java REST program   
+JIFRIT uses several flags:
 - ``--train_type``; 0=standard tests, 1=mutation tests
 - ``--timesteps``; maximum train duration
 - ``--input_domain``; numeric input domain
@@ -35,9 +34,6 @@ IFRIT uses several flags:
 
 e.g.:
 
-```shell
-python3 main.py --timesteps 2000000 --input_domain 6000 --episode_length 6000 --timer 60
-```
 ```shell
 python3 main.py --timesteps 2000000 --input_domain 6000 --episode_length 6000 --timer 60 \
 --sast_result ./test/sast_result.json \
