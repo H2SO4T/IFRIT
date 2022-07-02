@@ -4,7 +4,6 @@
 
 - python3
 - MacOS or Ubuntu
-- gcc or clang
 
 ## Installation & Setup
 
